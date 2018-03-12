@@ -12,6 +12,7 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -21,9 +22,26 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationDelegate {
@@ -37,16 +55,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationManager lm = null;
     private LocationListener myLocationListener = null;
 
-    private float ax = 0;
-    private float ay = 0;
-    private float az = 0;
-    private double g = 0.0;
-    private double lat = 0.0;
-    private double lng = 0.0;
-    private float acu = 0;
-    private double alt = 0.0;
-    private float speed = 0;
-    private String provider = "";
+    protected float ax = 0;
+    protected float ay = 0;
+    protected float az = 0;
+    protected double g = 0.0;
+    protected double lat = 0.0;
+    protected double lng = 0.0;
+    protected float acu = 0;
+    protected double alt = 0.0;
+    protected float speed = 0;
+    protected String provider = "";
+    protected String timeStamp = "";
+    protected Map<String, String> wifiInfo = null;
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
 
@@ -147,33 +167,50 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void btnSetTextView() {
+        wifiInfo = WifiUtils.getDetailsWifiInfo(this);
+        timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
         StringBuilder dis = new StringBuilder("You just Refreshed!!!\n");
+        dis.append("time is: ").append(timeStamp).append("\n");
         dis.append("ax is: ").append(ax).append("\n");
         dis.append("ay is: ").append(ay).append("\n");
         dis.append("az is: ").append(az).append("\n");
         dis.append("g is: ").append(g).append("\n");
         dis.append("latitude is: ").append(lat).append("\n");
         dis.append("longitude is: ").append(lng).append("\n");
-        dis.append("alt is: ").append(alt).append("\n");
-        dis.append("acu is: ").append(acu).append("\n");
+        dis.append("altitude is: ").append(alt).append("\n");
+        dis.append("accuracy is: ").append(acu).append("\n");
         dis.append("speed is: ").append(speed).append("\n");
         dis.append("provider is: ").append(provider).append("\n");
+        dis.append("Wifi info: \n");
+        dis.append("BSSID: ").append(wifiInfo.get("BSSID")).append("\n");
+        dis.append("SSID: ").append(wifiInfo.get("SSID")).append("\n");
+        dis.append("RSSI: ").append(wifiInfo.get("RSSI")).append("\n");
+//        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
+        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
         displayText.setText(dis);
+        new SendRequest().execute();
 
     }
 
     public void setTextView() {
         StringBuilder dis = new StringBuilder();
+        wifiInfo = WifiUtils.getDetailsWifiInfo(this);
         dis.append("ax is: ").append(ax).append("\n");
         dis.append("ay is: ").append(ay).append("\n");
         dis.append("az is: ").append(az).append("\n");
         dis.append("g is: ").append(g).append("\n");
         dis.append("latitude is: ").append(lat).append("\n");
         dis.append("longitude is: ").append(lng).append("\n");
-        dis.append("alt is: ").append(alt).append("\n");
-        dis.append("acu is: ").append(acu).append("\n");
+        dis.append("altitude is: ").append(alt).append("\n");
+        dis.append("accuracy is: ").append(acu).append("\n");
         dis.append("speed is: ").append(speed).append("\n");
         dis.append("provider is: ").append(provider).append("\n");
+        dis.append("Wifi info: \n");
+        dis.append("BSSID: ").append(wifiInfo.get("BSSID")).append("\n");
+        dis.append("SSID: ").append(wifiInfo.get("SSID")).append("\n");
+        dis.append("RSSI: ").append(wifiInfo.get("RSSI")).append("\n");
+//        dis.append("Wifi info: ").append().append("\n");
+        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
         displayText.setText(dis);
     }
 
@@ -234,5 +271,117 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             speed = location.getSpeed();
             setTextView();
     }
+
+
+
+    public class SendRequest extends AsyncTask<String, Void, String> {
+
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected String doInBackground(String... arg0) {
+
+            try {
+
+                URL url = new URL("https://script.google.com/macros/s/AKfycbxTRzHmTU8joKrn7cGiIB-EiBCBCG32zjdRoZTQdnlzz3vUW1QL/exec");
+                // https://script.google.com/macros/s/AKfycbxTRzHmTU8joKrn7cGiIB-EiBCBCG32zjdRoZTQdnlzz3vUW1QL/exec
+                JSONObject postDataParams = new JSONObject();
+
+                String id = "1XWgJdLQUH5hGd9vTstlrqx9VSjSerWB4eXTVedqorBE";
+
+                postDataParams.put("time", timeStamp);
+                postDataParams.put("ax", ax);
+                postDataParams.put("ay", ay);
+                postDataParams.put("az", az);
+                postDataParams.put("g", g);
+                postDataParams.put("latitude", lat);
+                postDataParams.put("longitude", lng);
+                postDataParams.put("altitude", alt);
+                postDataParams.put("accuracy", acu);
+                postDataParams.put("speed", speed);
+                postDataParams.put("provider", provider);
+                postDataParams.put("wifi mac", wifiInfo.get("BSSID"));
+                postDataParams.put("wifi ssid", wifiInfo.get("SSID"));
+                postDataParams.put("wifi signal level", wifiInfo.get("RSSI"));
+
+//                postDataParams.put("id", id);
+
+                Log.i("params", postDataParams.toString());
+
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setReadTimeout(15000 /* milliseconds */);
+                conn.setConnectTimeout(15000 /* milliseconds */);
+                conn.setRequestMethod("POST");
+                conn.setDoInput(true);
+                conn.setDoOutput(true);
+
+                OutputStream os = conn.getOutputStream();
+                BufferedWriter writer = new BufferedWriter(
+                        new OutputStreamWriter(os, "UTF-8"));
+                writer.write(getPostDataString(postDataParams));
+
+                writer.flush();
+                writer.close();
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+
+                if (responseCode == HttpsURLConnection.HTTP_OK) {
+
+                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder sb = new StringBuilder("");
+                    String line = "";
+
+                    while ((line = in.readLine()) != null) {
+                        sb.append(line);
+                        break;
+                    }
+
+                    in.close();
+                    return sb.toString();
+
+                } else {
+                    return new String("false : " + responseCode);
+                }
+            } catch (Exception e) {
+                return new String("Exception: " + e.getMessage());
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            Log.i("PostResult", result);
+            Toast.makeText(getApplicationContext(), result,
+                    Toast.LENGTH_LONG).show();
+
+        }
+    }
+
+    public String getPostDataString(JSONObject params) throws Exception {
+
+        StringBuilder result = new StringBuilder();
+        boolean first = true;
+
+        Iterator<String> itr = params.keys();
+
+        while (itr.hasNext()) {
+
+            String key = itr.next();
+            Object value = params.get(key);
+
+            if (first)
+                first = false;
+            else
+                result.append("&");
+
+            result.append(URLEncoder.encode(key, "UTF-8"));
+            result.append("=");
+            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
+
+        }
+        return result.toString();
+    }
+
 
 }

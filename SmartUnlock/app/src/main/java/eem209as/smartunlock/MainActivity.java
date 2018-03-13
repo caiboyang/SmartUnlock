@@ -14,6 +14,7 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -49,12 +50,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView mTextMessage;
     private TextView displayText;
     private Button refreshBtn;
+    private Button safeBtn;
+    private Button dangerBtn;
     private boolean mPermissionReady;
 
     private SensorManager sm;
     private LocationManager lm = null;
     private LocationListener myLocationListener = null;
 
+    private boolean isSafe = false;
     protected float ax = 0;
     protected float ay = 0;
     protected float az = 0;
@@ -70,7 +74,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
 
-
+    // Create the Handler object (on the main thread by default)
+    Handler handler = new Handler();
+    // Define the code block to be executed
+    private Runnable runnableCode = new Runnable() {
+        @Override
+        public void run() {
+            // Do something here on the main thread
+            Log.d("Handlers", "Called on main thread");
+            btnSetTextView();
+            Toast.makeText(getApplicationContext(), "UI refreshed!!!", Toast.LENGTH_LONG).show();
+            handler.postDelayed(this, 30000);
+        }
+    };
 //    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
 //            = new BottomNavigationView.OnNavigationItemSelectedListener() {
 //
@@ -115,6 +131,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        mTextMessage = (TextView) findViewById(R.id.message);
         displayText = findViewById(R.id.text_display);
         refreshBtn = findViewById(R.id.refresh_button);
+        safeBtn = findViewById(R.id.safe_button);
+        dangerBtn = findViewById(R.id.danger_button);
 //        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
 //        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
@@ -129,10 +147,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
         }
+
+
+        // Run the above code block on the main thread after 2 seconds
+        handler.post(runnableCode);
         refreshBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                btnSetTextView();
+
+//                btnSetTextView();
+            }
+        });
+        safeBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isSafe = true;
+                Toast.makeText(getApplicationContext(), "Safe mode activated", Toast.LENGTH_LONG).show();
+            }
+        });
+        dangerBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isSafe = false;
+                Toast.makeText(getApplicationContext(), "Dangerous mode activated", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -168,9 +205,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void btnSetTextView() {
         wifiInfo = WifiUtils.getDetailsWifiInfo(this);
-        timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(Calendar.getInstance().getTime());
+        timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
         StringBuilder dis = new StringBuilder("You just Refreshed!!!\n");
         dis.append("time is: ").append(timeStamp).append("\n");
+        dis.append("the current situation is: ").append(isSafe ? "Safe" : "Dangerous").append("\n");
         dis.append("ax is: ").append(ax).append("\n");
         dis.append("ay is: ").append(ay).append("\n");
         dis.append("az is: ").append(az).append("\n");
@@ -195,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void setTextView() {
         StringBuilder dis = new StringBuilder();
         wifiInfo = WifiUtils.getDetailsWifiInfo(this);
+        dis.append("time is: ").append(timeStamp).append("\n");
         dis.append("ax is: ").append(ax).append("\n");
         dis.append("ay is: ").append(ay).append("\n");
         dis.append("az is: ").append(az).append("\n");
@@ -269,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            float bearing = location.getBearing();
             // 速度 米/秒
             speed = location.getSpeed();
-            setTextView();
+//            setTextView();
     }
 
 
@@ -304,6 +343,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 postDataParams.put("wifi mac", wifiInfo.get("BSSID"));
                 postDataParams.put("wifi ssid", wifiInfo.get("SSID"));
                 postDataParams.put("wifi signal level", wifiInfo.get("RSSI"));
+                postDataParams.put("safe", isSafe);
 
 //                postDataParams.put("id", id);
 

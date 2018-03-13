@@ -33,7 +33,7 @@ public class BLEUtils {
         }
 
         for (BluetoothDevice devices : connectedDevices) {
-            res.append("Device : address : ").append(devices.getAddress());
+            res.append("Device: address: ").append(devices.getAddress());
 //            Log.d("DeviceActivity", "Device : address : " + devices.getAddress() + " name :"
 //                    + devices.getName());
         }

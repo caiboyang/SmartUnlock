@@ -38,6 +38,7 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -70,6 +71,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected float speed = 0;
     protected String provider = "";
     protected String timeStamp = "";
+    protected String dayStamp = "";
     protected Map<String, String> wifiInfo = null;
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
@@ -205,8 +207,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     public void btnSetTextView() {
         wifiInfo = WifiUtils.getDetailsWifiInfo(this);
-        timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+//        timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+        Date now = Calendar.getInstance().getTime();
+        dayStamp = new SimpleDateFormat("EEEE").format(now);
+        timeStamp = new SimpleDateFormat("HH:mm:ss").format(now);
         StringBuilder dis = new StringBuilder("You just Refreshed!!!\n");
+        dis.append("day is: ").append(dayStamp).append("\n");
         dis.append("time is: ").append(timeStamp).append("\n");
         dis.append("the current situation is: ").append(isSafe ? "Safe" : "Dangerous").append("\n");
         dis.append("ax is: ").append(ax).append("\n");
@@ -233,6 +239,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void setTextView() {
         StringBuilder dis = new StringBuilder();
         wifiInfo = WifiUtils.getDetailsWifiInfo(this);
+        dis.append("day is: ").append(dayStamp).append("\n");
         dis.append("time is: ").append(timeStamp).append("\n");
         dis.append("ax is: ").append(ax).append("\n");
         dis.append("ay is: ").append(ay).append("\n");
@@ -329,7 +336,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
                 String id = "1XWgJdLQUH5hGd9vTstlrqx9VSjSerWB4eXTVedqorBE";
 
-                postDataParams.put("time", timeStamp);
+                int dayInt;
+                switch (dayStamp){
+                    case "Monday":
+                        dayInt = 1;
+                        break;
+                    case "Tuesday":
+                        dayInt = 2;
+                        break;
+                    case "Wednesday":
+                        dayInt = 3;
+                        break;
+                    case "Thursday":
+                        dayInt = 4;
+                        break;
+                    case "Friday":
+                        dayInt = 5;
+                        break;
+                    case "Saturday":
+                        dayInt = 6;
+                        break;
+                    case "Sunday":
+                        dayInt = 7;
+                        break;
+                    default:
+                        dayInt = 0;
+                        break;
+                }
+                postDataParams.put("localDay", dayInt);
+                postDataParams.put("localTime", timeStamp);
                 postDataParams.put("ax", ax);
                 postDataParams.put("ay", ay);
                 postDataParams.put("az", az);

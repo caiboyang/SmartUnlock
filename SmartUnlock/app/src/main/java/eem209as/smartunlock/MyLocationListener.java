@@ -16,6 +16,7 @@ public class MyLocationListener implements LocationListener {
     private Location myLocation = null;
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd  HH:mm:ss.SSSZ");
     LocationDelegate locationDelegate = null;
+    private static final String tag = "MyLocationListener";
 
     public MyLocationListener(LocationDelegate locationDelegate){
         this.locationDelegate = locationDelegate;
@@ -43,17 +44,17 @@ public class MyLocationListener implements LocationListener {
 
     @Override
     public void onStatusChanged(String provider, int status, Bundle extras) {
-        Log.i("tag", "onStatusChanged: " + provider);
+        Log.i(tag, "onStatusChanged: " + provider);
 
     }
 
     @Override
     public void onProviderEnabled(String provider) {
-        Log.i("tag", "onProviderEnabled: " + provider);
+        Log.i(tag, "onProviderEnabled: " + provider);
     }
 
     @Override
     public void onProviderDisabled(String provider) {
-        Log.i("tag", "onProviderDisabled: " + provider);
+        Log.i(tag, "onProviderDisabled: " + provider);
     }
 }

@@ -60,20 +60,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private AWSConnection awsConnection;
 
-    private boolean isSafe = false;
-    protected float ax = 0;
-    protected float ay = 0;
-    protected float az = 0;
-    protected double g = 0.0;
-    protected double lat = 0.0;
-    protected double lng = 0.0;
-    protected float acu = 0;
-    protected double alt = 0.0;
-    protected float speed = 0;
-    protected String provider = "";
-    protected String timeStamp = "";
-    protected String dayStamp = "";
-    protected Map<String, String> wifiInfo = null;
+    private DataClass myData = new DataClass();
+
+//    private boolean isSafe = false;
+//    protected float ax = 0;
+//    protected float ay = 0;
+//    protected float az = 0;
+//    protected double g = 0.0;
+//    protected double lat = 0.0;
+//    protected double lng = 0.0;
+//    protected float acu = 0;
+//    protected double alt = 0.0;
+//    protected float speed = 0;
+//    protected String provider = "";
+//    protected String timeStamp = "";
+//    protected String dayStamp = "";
+//    protected Map<String, String> wifiInfo = null;
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
 
@@ -85,7 +87,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void run() {
             // Do something here on the main thread
             Log.d("Handlers", "Called on main thread");
-            btnSetTextView();
+            setTextView();
             Toast.makeText(getApplicationContext(), "UI refreshed!!!", Toast.LENGTH_LONG).show();
             handler.postDelayed(this, 30000);
         }
@@ -159,21 +161,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         refreshBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                awsConnection.callPredict();
+                awsConnection.callPredict(myData);
 //                btnSetTextView();
             }
         });
         safeBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isSafe = true;
+                myData.isSafe = true;
                 Toast.makeText(getApplicationContext(), "Safe mode activated", Toast.LENGTH_LONG).show();
             }
         });
         dangerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                isSafe = false;
+                myData.isSafe = false;
                 Toast.makeText(getApplicationContext(), "Dangerous mode activated", Toast.LENGTH_LONG).show();
             }
         });
@@ -208,30 +210,30 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    public void btnSetTextView() {
-        wifiInfo = WifiUtils.getDetailsWifiInfo(this);
+    public void setTextView() {
+        myData.wifiInfo = WifiUtils.getDetailsWifiInfo(this);
 //        timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
         Date now = Calendar.getInstance().getTime();
-        dayStamp = new SimpleDateFormat("EEEE").format(now);
-        timeStamp = new SimpleDateFormat("HH:mm:ss").format(now);
+        myData.dayStamp = new SimpleDateFormat("EEEE").format(now);
+        myData.timeStamp = new SimpleDateFormat("HH:mm:ss").format(now);
         StringBuilder dis = new StringBuilder("You just Refreshed!!!\n");
-        dis.append("day is: ").append(dayStamp).append("\n");
-        dis.append("time is: ").append(timeStamp).append("\n");
-        dis.append("the current situation is: ").append(isSafe ? "Safe" : "Dangerous").append("\n");
-        dis.append("ax is: ").append(ax).append("\n");
-        dis.append("ay is: ").append(ay).append("\n");
-        dis.append("az is: ").append(az).append("\n");
-        dis.append("g is: ").append(g).append("\n");
-        dis.append("latitude is: ").append(lat).append("\n");
-        dis.append("longitude is: ").append(lng).append("\n");
-        dis.append("altitude is: ").append(alt).append("\n");
-        dis.append("accuracy is: ").append(acu).append("\n");
-        dis.append("speed is: ").append(speed).append("\n");
-        dis.append("provider is: ").append(provider).append("\n");
+        dis.append("day is: ").append(myData.dayStamp).append("\n");
+        dis.append("time is: ").append(myData.timeStamp).append("\n");
+        dis.append("the current situation is: ").append(myData.isSafe ? "Safe" : "Dangerous").append("\n");
+        dis.append("ax is: ").append(myData.ax).append("\n");
+        dis.append("ay is: ").append(myData.ay).append("\n");
+        dis.append("az is: ").append(myData.az).append("\n");
+        dis.append("g is: ").append(myData.g).append("\n");
+        dis.append("latitude is: ").append(myData.lat).append("\n");
+        dis.append("longitude is: ").append(myData.lng).append("\n");
+        dis.append("altitude is: ").append(myData.alt).append("\n");
+        dis.append("accuracy is: ").append(myData.acu).append("\n");
+        dis.append("speed is: ").append(myData.speed).append("\n");
+        dis.append("provider is: ").append(myData.provider).append("\n");
         dis.append("Wifi info: \n");
-        dis.append("BSSID: ").append(wifiInfo.get("BSSID")).append("\n");
-        dis.append("SSID: ").append(wifiInfo.get("SSID")).append("\n");
-        dis.append("RSSI: ").append(wifiInfo.get("RSSI")).append("\n");
+        dis.append("BSSID: ").append(myData.wifiInfo.get("BSSID")).append("\n");
+        dis.append("SSID: ").append(myData.wifiInfo.get("SSID")).append("\n");
+        dis.append("RSSI: ").append(myData.wifiInfo.get("RSSI")).append("\n");
 //        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
         dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
         displayText.setText(dis);
@@ -239,29 +241,29 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     }
 
-    public void setTextView() {
-        StringBuilder dis = new StringBuilder();
-        wifiInfo = WifiUtils.getDetailsWifiInfo(this);
-        dis.append("day is: ").append(dayStamp).append("\n");
-        dis.append("time is: ").append(timeStamp).append("\n");
-        dis.append("ax is: ").append(ax).append("\n");
-        dis.append("ay is: ").append(ay).append("\n");
-        dis.append("az is: ").append(az).append("\n");
-        dis.append("g is: ").append(g).append("\n");
-        dis.append("latitude is: ").append(lat).append("\n");
-        dis.append("longitude is: ").append(lng).append("\n");
-        dis.append("altitude is: ").append(alt).append("\n");
-        dis.append("accuracy is: ").append(acu).append("\n");
-        dis.append("speed is: ").append(speed).append("\n");
-        dis.append("provider is: ").append(provider).append("\n");
-        dis.append("Wifi info: \n");
-        dis.append("BSSID: ").append(wifiInfo.get("BSSID")).append("\n");
-        dis.append("SSID: ").append(wifiInfo.get("SSID")).append("\n");
-        dis.append("RSSI: ").append(wifiInfo.get("RSSI")).append("\n");
-//        dis.append("Wifi info: ").append().append("\n");
-        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
-        displayText.setText(dis);
-    }
+//    public void setTextView() {
+//        StringBuilder dis = new StringBuilder();
+//        wifiInfo = WifiUtils.getDetailsWifiInfo(this);
+//        dis.append("day is: ").append(dayStamp).append("\n");
+//        dis.append("time is: ").append(timeStamp).append("\n");
+//        dis.append("ax is: ").append(ax).append("\n");
+//        dis.append("ay is: ").append(ay).append("\n");
+//        dis.append("az is: ").append(az).append("\n");
+//        dis.append("g is: ").append(g).append("\n");
+//        dis.append("latitude is: ").append(lat).append("\n");
+//        dis.append("longitude is: ").append(lng).append("\n");
+//        dis.append("altitude is: ").append(alt).append("\n");
+//        dis.append("accuracy is: ").append(acu).append("\n");
+//        dis.append("speed is: ").append(speed).append("\n");
+//        dis.append("provider is: ").append(provider).append("\n");
+//        dis.append("Wifi info: \n");
+//        dis.append("BSSID: ").append(wifiInfo.get("BSSID")).append("\n");
+//        dis.append("SSID: ").append(wifiInfo.get("SSID")).append("\n");
+//        dis.append("RSSI: ").append(wifiInfo.get("RSSI")).append("\n");
+////        dis.append("Wifi info: ").append().append("\n");
+//        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
+//        displayText.setText(dis);
+//    }
 
     @Override
     protected void onPause() {
@@ -289,11 +291,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (Sensor.TYPE_ACCELEROMETER == event.sensor.getType()) {
 
             float[] values = event.values;
-            this.ax = values[0];
-            this.ay = values[1];
-            this.az = values[2];
+            myData.ax = values[0];
+            myData.ay = values[1];
+            myData.az = values[2];
 
-            this.g = Math.sqrt(ax * ax + ay * ay + az * az);
+            myData.g = Math.sqrt(myData.ax * myData.ax + myData.ay * myData.ay + myData.az * myData.az);
         }
 
     }
@@ -305,19 +307,19 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     @Override
     public void returnLocation(Location location) {
 //         获取纬度
-            lat = location.getLatitude();
+        myData.lat = location.getLatitude();
             // 获取经度
-            lng = location.getLongitude();
+        myData.lng = location.getLongitude();
             // 位置提供者
-            provider = location.getProvider();
+        myData.provider = location.getProvider();
             // 位置的准确性
-            acu = location.getAccuracy();
+        myData.acu = location.getAccuracy();
             // 高度信息
-            alt = location.getAltitude();
+        myData.alt = location.getAltitude();
             // 方向角
 //            float bearing = location.getBearing();
             // 速度 米/秒
-            speed = location.getSpeed();
+        myData.speed = location.getSpeed();
 //            setTextView();
     }
 
@@ -340,7 +342,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 String id = "1XWgJdLQUH5hGd9vTstlrqx9VSjSerWB4eXTVedqorBE";
 
                 int dayInt;
-                switch (dayStamp){
+                switch (myData.dayStamp){
                     case "Monday":
                         dayInt = 1;
                         break;
@@ -367,21 +369,21 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                         break;
                 }
                 postDataParams.put("localDay", dayInt);
-                postDataParams.put("localTime", timeStamp);
-                postDataParams.put("ax", ax);
-                postDataParams.put("ay", ay);
-                postDataParams.put("az", az);
-                postDataParams.put("g", g);
-                postDataParams.put("latitude", lat);
-                postDataParams.put("longitude", lng);
-                postDataParams.put("altitude", alt);
-                postDataParams.put("accuracy", acu);
-                postDataParams.put("speed", speed);
-                postDataParams.put("provider", provider);
-                postDataParams.put("wifi mac", wifiInfo.get("BSSID"));
-                postDataParams.put("wifi ssid", wifiInfo.get("SSID"));
-                postDataParams.put("wifi signal level", wifiInfo.get("RSSI"));
-                postDataParams.put("safe", isSafe);
+                postDataParams.put("localTime", myData.timeStamp);
+                postDataParams.put("ax", myData.ax);
+                postDataParams.put("ay", myData.ay);
+                postDataParams.put("az", myData.az);
+                postDataParams.put("g", myData.g);
+                postDataParams.put("latitude", myData.lat);
+                postDataParams.put("longitude", myData.lng);
+                postDataParams.put("altitude", myData.alt);
+                postDataParams.put("accuracy", myData.acu);
+                postDataParams.put("speed", myData.speed);
+                postDataParams.put("provider", myData.provider);
+                postDataParams.put("wifi mac", myData.wifiInfo.get("BSSID"));
+                postDataParams.put("wifi ssid", myData.wifiInfo.get("SSID"));
+                postDataParams.put("wifi signal level", myData.wifiInfo.get("RSSI"));
+                postDataParams.put("safe", myData.isSafe);
 
 //                postDataParams.put("id", id);
 

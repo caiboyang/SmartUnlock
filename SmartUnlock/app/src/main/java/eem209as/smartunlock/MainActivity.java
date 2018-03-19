@@ -36,7 +36,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -58,6 +57,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sm;
     private LocationManager lm = null;
     private LocationListener myLocationListener = null;
+
+    private AWSConnection awsConnection;
 
     private boolean isSafe = false;
     protected float ax = 0;
@@ -116,7 +117,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         /**
          * permission check
          */
@@ -129,6 +129,9 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (!mPermissionReady) {
             requestPermission();
         }
+
+        awsConnection = new AWSConnection(this);
+        awsConnection.initialize();
 
 //        mTextMessage = (TextView) findViewById(R.id.message);
         displayText = findViewById(R.id.text_display);
@@ -156,7 +159,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         refreshBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
+                awsConnection.callPredict();
 //                btnSetTextView();
             }
         });

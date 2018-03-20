@@ -130,7 +130,7 @@ public class AWSConnection {
                 PredictResult predictResult = client.predict(predictRequest);
                 String predictResultLabel = predictResult.getPrediction().getPredictedLabel();
                 Log.i("PredictionResult", predictResultLabel);
-                Toast.makeText(activity.getApplicationContext(), predictResultLabel, Toast.LENGTH_LONG).show();
+//                Toast.makeText(activity.getApplicationContext(), predictResultLabel, Toast.LENGTH_LONG).show();
             }
         }).start();
 

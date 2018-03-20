@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">SmartUnlock_IoT</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="title_activity_login">Sign in</string>
+
+    <string name="permission_warning">To continue, please enable Camera and Read Write External Storage permission for this application.</string>
+    <string name="dismiss">Dismiss</string>
+</resources>

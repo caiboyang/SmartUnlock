@@ -1,4 +1,4 @@
-package eem209as.smartunlock;
+package eem209as.smartunlock_IoT;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -41,6 +41,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -58,25 +59,27 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationManager lm = null;
     private LocationListener myLocationListener = null;
 
-    private AWSConnection awsConnection;
-
     private DataClass myData = new DataClass();
+    protected String clientId;
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
 
-    // Create the Handler object (on the main thread by default)
-    Handler handler = new Handler();
-    // Define the code block to be executed
-    private Runnable runnableCode = new Runnable() {
-        @Override
-        public void run() {
-            // Do something here on the main thread
-            Log.d("Handlers", "Called on main thread");
-            setTextView();
-            Toast.makeText(getApplicationContext(), "UI refreshed!!!", Toast.LENGTH_LONG).show();
-            handler.postDelayed(this, 30000);
-        }
-    };
+    AWSIoTConnect awsConnection = null;
+
+//    // Create the Handler object (on the main thread by default)
+//    Handler handler = new Handler();
+//    // Define the code block to be executed
+//    private Runnable runnableCode = new Runnable() {
+//        @Override
+//        public void run() {
+//            // Do something here on the main thread
+//            Log.d("Handlers", "Called on main thread");
+//            setTextView();
+//            Toast.makeText(getApplicationContext(), "UI refreshed!!!", Toast.LENGTH_LONG).show();
+//            handler.postDelayed(this, 30000);
+//        }
+//    };
+
 //    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
 //            = new BottomNavigationView.OnNavigationItemSelectedListener() {
 //
@@ -104,6 +107,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         /**
          * permission check
          */
@@ -116,9 +120,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (!mPermissionReady) {
             requestPermission();
         }
-
-        awsConnection = new AWSConnection(this);
-        awsConnection.initialize();
 
 //        mTextMessage = (TextView) findViewById(R.id.message);
         displayText = findViewById(R.id.text_display);
@@ -140,14 +141,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
         }
 
+        clientId = UUID.randomUUID().toString();
+        awsConnection = new AWSIoTConnect(this);
+        awsConnection.onCreateCall();
 
         // Run the above code block on the main thread after 2 seconds
-        handler.post(runnableCode);
+//        handler.post(runnableCode);
+
         refreshBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                awsConnection.callPredict(myData);
-//                btnSetTextView();
+                setTextView();
+
             }
         });
         safeBtn.setOnClickListener(new View.OnClickListener() {
@@ -186,12 +191,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
         }
-        else{
-            new AlertDialog.Builder(this)
-                    .setMessage(R.string.permission_warning)
-                    .setPositiveButton(R.string.dismiss, null)
-                    .show();
-        }
+
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -222,7 +222,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
         dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
         displayText.setText(dis);
-        new SendRequest().execute();
+        awsConnection.sendData(myData);
+//        new SendRequest().execute();
 
     }
 
@@ -287,143 +288,143 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
 
 
-    public class SendRequest extends AsyncTask<String, Void, String> {
+//    public class SendRequest extends AsyncTask<String, Void, String> {
+//
+//        protected void onPreExecute() {
+//        }
+//
+//        @Override
+//        protected String doInBackground(String... arg0) {
+//
+//            try {
+//
+//                URL url = new URL("https://script.google.com/macros/s/AKfycbxTRzHmTU8joKrn7cGiIB-EiBCBCG32zjdRoZTQdnlzz3vUW1QL/exec");
+//                // https://script.google.com/macros/s/AKfycbxTRzHmTU8joKrn7cGiIB-EiBCBCG32zjdRoZTQdnlzz3vUW1QL/exec
+//                JSONObject postDataParams = new JSONObject();
+//
+//                String id = "1XWgJdLQUH5hGd9vTstlrqx9VSjSerWB4eXTVedqorBE";
+//
+//                int dayInt;
+//                switch (myData.dayStamp){
+//                    case "Monday":
+//                        dayInt = 1;
+//                        break;
+//                    case "Tuesday":
+//                        dayInt = 2;
+//                        break;
+//                    case "Wednesday":
+//                        dayInt = 3;
+//                        break;
+//                    case "Thursday":
+//                        dayInt = 4;
+//                        break;
+//                    case "Friday":
+//                        dayInt = 5;
+//                        break;
+//                    case "Saturday":
+//                        dayInt = 6;
+//                        break;
+//                    case "Sunday":
+//                        dayInt = 7;
+//                        break;
+//                    default:
+//                        dayInt = 0;
+//                        break;
+//                }
+//                postDataParams.put("localDay", dayInt);
+//                postDataParams.put("localTime", myData.timeStamp);
+//                postDataParams.put("ax", myData.ax);
+//                postDataParams.put("ay", myData.ay);
+//                postDataParams.put("az", myData.az);
+//                postDataParams.put("g", myData.g);
+//                postDataParams.put("latitude", myData.lat);
+//                postDataParams.put("longitude", myData.lng);
+//                postDataParams.put("altitude", myData.alt);
+//                postDataParams.put("accuracy", myData.acu);
+//                postDataParams.put("speed", myData.speed);
+//                postDataParams.put("provider", myData.provider);
+//                postDataParams.put("wifi mac", myData.wifiInfo.get("BSSID"));
+//                postDataParams.put("wifi ssid", myData.wifiInfo.get("SSID"));
+//                postDataParams.put("wifi signal level", myData.wifiInfo.get("RSSI"));
+//                postDataParams.put("safe", myData.isSafe);
+//
+////                postDataParams.put("id", id);
+//
+//                Log.i("params", postDataParams.toString());
+//
+//                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//                conn.setReadTimeout(15000 /* milliseconds */);
+//                conn.setConnectTimeout(15000 /* milliseconds */);
+//                conn.setRequestMethod("POST");
+//                conn.setDoInput(true);
+//                conn.setDoOutput(true);
+//
+//                OutputStream os = conn.getOutputStream();
+//                BufferedWriter writer = new BufferedWriter(
+//                        new OutputStreamWriter(os, "UTF-8"));
+//                writer.write(getPostDataString(postDataParams));
+//
+//                writer.flush();
+//                writer.close();
+//                os.close();
+//
+//                int responseCode = conn.getResponseCode();
+//
+//                if (responseCode == HttpsURLConnection.HTTP_OK) {
+//
+//                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//                    StringBuilder sb = new StringBuilder("");
+//                    String line = "";
+//
+//                    while ((line = in.readLine()) != null) {
+//                        sb.append(line);
+//                        break;
+//                    }
+//
+//                    in.close();
+//                    return sb.toString();
+//
+//                } else {
+//                    return new String("false : " + responseCode);
+//                }
+//            } catch (Exception e) {
+//                return new String("Exception: " + e.getMessage());
+//            }
+//        }
+//
+//        @Override
+//        protected void onPostExecute(String result) {
+//            Log.i("PostResult", result);
+//            Toast.makeText(getApplicationContext(), result,
+//                    Toast.LENGTH_LONG).show();
+//
+//        }
+//    }
 
-        protected void onPreExecute() {
-        }
-
-        @Override
-        protected String doInBackground(String... arg0) {
-
-            try {
-
-                URL url = new URL("https://script.google.com/macros/s/AKfycbxTRzHmTU8joKrn7cGiIB-EiBCBCG32zjdRoZTQdnlzz3vUW1QL/exec");
-
-                JSONObject postDataParams = new JSONObject();
-
-                String id = "1XWgJdLQUH5hGd9vTstlrqx9VSjSerWB4eXTVedqorBE";
-
-                int dayInt;
-                switch (myData.dayStamp){
-                    case "Monday":
-                        dayInt = 1;
-                        break;
-                    case "Tuesday":
-                        dayInt = 2;
-                        break;
-                    case "Wednesday":
-                        dayInt = 3;
-                        break;
-                    case "Thursday":
-                        dayInt = 4;
-                        break;
-                    case "Friday":
-                        dayInt = 5;
-                        break;
-                    case "Saturday":
-                        dayInt = 6;
-                        break;
-                    case "Sunday":
-                        dayInt = 7;
-                        break;
-                    default:
-                        dayInt = 0;
-                        break;
-                }
-                postDataParams.put("localDay", dayInt);
-                postDataParams.put("localTime", myData.timeStamp);
-                postDataParams.put("ax", myData.ax);
-                postDataParams.put("ay", myData.ay);
-                postDataParams.put("az", myData.az);
-                postDataParams.put("g", myData.g);
-                postDataParams.put("latitude", myData.lat);
-                postDataParams.put("longitude", myData.lng);
-                postDataParams.put("altitude", myData.alt);
-                postDataParams.put("accuracy", myData.acu);
-                postDataParams.put("speed", myData.speed);
-                postDataParams.put("provider", myData.provider);
-                postDataParams.put("wifi mac", myData.wifiInfo.get("BSSID"));
-                postDataParams.put("wifi ssid", myData.wifiInfo.get("SSID"));
-                postDataParams.put("wifi signal level", myData.wifiInfo.get("RSSI"));
-                postDataParams.put("safe", myData.isSafe);
-
-//                postDataParams.put("id", id);
-
-                Log.i("params", postDataParams.toString());
-
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setReadTimeout(15000 /* milliseconds */);
-                conn.setConnectTimeout(15000 /* milliseconds */);
-                conn.setRequestMethod("POST");
-                conn.setDoInput(true);
-                conn.setDoOutput(true);
-
-                OutputStream os = conn.getOutputStream();
-                BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(os, "UTF-8"));
-                writer.write(getPostDataString(postDataParams));
-
-                writer.flush();
-                writer.close();
-                os.close();
-
-                int responseCode = conn.getResponseCode();
-
-                if (responseCode == HttpsURLConnection.HTTP_OK) {
-
-                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuilder sb = new StringBuilder("");
-                    String line = "";
-
-                    while ((line = in.readLine()) != null) {
-                        sb.append(line);
-                        break;
-                    }
-
-                    in.close();
-                    return sb.toString();
-
-                } else {
-                    return new String("false : " + responseCode);
-                }
-            } catch (Exception e) {
-                return new String("Exception: " + e.getMessage());
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            Log.i("PostResult", result);
-            Toast.makeText(getApplicationContext(), result,
-                    Toast.LENGTH_LONG).show();
-
-        }
-    }
-
-    public String getPostDataString(JSONObject params) throws Exception {
-
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-
-        Iterator<String> itr = params.keys();
-
-        while (itr.hasNext()) {
-
-            String key = itr.next();
-            Object value = params.get(key);
-
-            if (first)
-                first = false;
-            else
-                result.append("&");
-
-            result.append(URLEncoder.encode(key, "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
-
-        }
-        return result.toString();
-    }
+//    public String getPostDataString(JSONObject params) throws Exception {
+//
+//        StringBuilder result = new StringBuilder();
+//        boolean first = true;
+//
+//        Iterator<String> itr = params.keys();
+//
+//        while (itr.hasNext()) {
+//
+//            String key = itr.next();
+//            Object value = params.get(key);
+//
+//            if (first)
+//                first = false;
+//            else
+//                result.append("&");
+//
+//            result.append(URLEncoder.encode(key, "UTF-8"));
+//            result.append("=");
+//            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
+//
+//        }
+//        return result.toString();
+//    }
 
 
 }

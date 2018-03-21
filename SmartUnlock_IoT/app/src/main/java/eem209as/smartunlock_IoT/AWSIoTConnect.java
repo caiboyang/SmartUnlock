@@ -111,6 +111,8 @@ public class AWSIoTConnect {
 
                         JSONObject jsonMessage = new JSONObject(message);
                         int result = jsonMessage.getInt("result");
+                        myData.result = result;
+                        new Thread(mainActivity::dataReceived).start();
                         Log.d(LOG_TAG, "Result: " + result);
 //                                   activity.tvLastMessage.setText(String.valueOf(isSignUpSuccess));
 //                                    activity.tvLastMessage.setText((String) jsonMessage.get("message"));
@@ -136,7 +138,32 @@ public class AWSIoTConnect {
         Log.d(LOG_TAG, "sendTopic = " + sendTopic);
 
         try {
-            sendContent.put("ID", "MY VALUE HERE");
+            switch(myData.dayStamp){
+                case "Monday":
+                case "Tuesday":
+                case "Wednesday":
+                case "Thursday":
+                case "Friday":
+                    sendContent.put("localDay", "Weekday");
+                    break;
+                case "Saturday":
+                case "Sunday":
+                    sendContent.put("localDay", "Weekend");
+                    break;
+            }
+            sendContent.put("localTime", myData.timeStamp.substring(0,2));
+            sendContent.put("g", Double.toString(myData.g));
+            sendContent.put("latitude", Double.toString(myData.lat));
+            sendContent.put("longitude", Double.toString(myData.lng));
+            sendContent.put("accuracy", Double.toString(myData.acu));
+            sendContent.put("altitude", Double.toString(myData.alt));
+            sendContent.put("speed", Double.toString(myData.speed));
+            sendContent.put("wifi mac", myData.wifiInfo.get("BSSID"));
+            sendContent.put("wifi ssid",  myData.wifiInfo.get("SSID"));
+            sendContent.put("wifi signal level", myData.wifiInfo.get("RSSI"));
+            sendContent.put("provider", myData.provider);
+            sendContent.put("safe", "10");
+
             msg = sendContent.toString();
             mqttManager.publishString(msg, sendTopic, AWSIotMqttQos.QOS0);
         } catch (JSONException e) {

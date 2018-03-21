@@ -21,4 +21,6 @@ class DataClass {
     String timeStamp = "";
     String dayStamp = "";
     Map<String, String> wifiInfo = null;
+
+    int result = -1;
 }

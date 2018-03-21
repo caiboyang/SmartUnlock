@@ -2,7 +2,6 @@ package eem209as.smartunlock_IoT;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.hardware.Sensor;
@@ -12,38 +11,25 @@ import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
-
-import javax.net.ssl.HttpsURLConnection;
 
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationDelegate {
@@ -51,8 +37,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView mTextMessage;
     private TextView displayText;
     private Button refreshBtn;
-    private Button safeBtn;
-    private Button dangerBtn;
+
     private boolean mPermissionReady;
 
     private SensorManager sm;
@@ -80,20 +65,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        }
 //    };
 
+
 //    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
 //            = new BottomNavigationView.OnNavigationItemSelectedListener() {
 //
 //        @Override
 //        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
 //            switch (item.getItemId()) {
-//                case R.id.navigation_home:
-//                    mTextMessage.setText(R.string.title_home);
+//                case R.id.navigation_predict:
+//                    mTextMessage.setText(R.string.title_predict);
 //                    return true;
-//                case R.id.navigation_dashboard:
-//                    mTextMessage.setText(R.string.title_dashboard);
-//                    return true;
-//                case R.id.navigation_notifications:
-//                    mTextMessage.setText(R.string.title_notifications);
+//                case R.id.navigation_train:
+//                    mTextMessage.setText(R.string.title_train);
 //                    return true;
 //            }
 //            return false;
@@ -124,8 +107,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        mTextMessage = (TextView) findViewById(R.id.message);
         displayText = findViewById(R.id.text_display);
         refreshBtn = findViewById(R.id.refresh_button);
-        safeBtn = findViewById(R.id.safe_button);
-        dangerBtn = findViewById(R.id.danger_button);
+//
 //        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
 //        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
 
@@ -153,20 +135,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             public void onClick(View view) {
                 setTextView();
 
-            }
-        });
-        safeBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                myData.isSafe = true;
-                Toast.makeText(getApplicationContext(), "Safe mode activated", Toast.LENGTH_LONG).show();
-            }
-        });
-        dangerBtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                myData.isSafe = false;
-                Toast.makeText(getApplicationContext(), "Dangerous mode activated", Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -286,145 +254,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            setTextView();
     }
 
+    protected void dataReceived(){
+        Log.d(LOG_TAG, "dataReceived!!!");
+        runOnUiThread(() -> {
+            StringBuilder dis = new StringBuilder("Data received!!!\n");
+            dis.append("result is: ").append(myData.result).append("\n");
+            displayText.setText(dis);
+        });
+    }
 
-
-//    public class SendRequest extends AsyncTask<String, Void, String> {
-//
-//        protected void onPreExecute() {
-//        }
-//
-//        @Override
-//        protected String doInBackground(String... arg0) {
-//
-//            try {
-//
-//                URL url = new URL("https://script.google.com/macros/s/AKfycbxTRzHmTU8joKrn7cGiIB-EiBCBCG32zjdRoZTQdnlzz3vUW1QL/exec");
-//                // https://script.google.com/macros/s/AKfycbxTRzHmTU8joKrn7cGiIB-EiBCBCG32zjdRoZTQdnlzz3vUW1QL/exec
-//                JSONObject postDataParams = new JSONObject();
-//
-//                String id = "1XWgJdLQUH5hGd9vTstlrqx9VSjSerWB4eXTVedqorBE";
-//
-//                int dayInt;
-//                switch (myData.dayStamp){
-//                    case "Monday":
-//                        dayInt = 1;
-//                        break;
-//                    case "Tuesday":
-//                        dayInt = 2;
-//                        break;
-//                    case "Wednesday":
-//                        dayInt = 3;
-//                        break;
-//                    case "Thursday":
-//                        dayInt = 4;
-//                        break;
-//                    case "Friday":
-//                        dayInt = 5;
-//                        break;
-//                    case "Saturday":
-//                        dayInt = 6;
-//                        break;
-//                    case "Sunday":
-//                        dayInt = 7;
-//                        break;
-//                    default:
-//                        dayInt = 0;
-//                        break;
-//                }
-//                postDataParams.put("localDay", dayInt);
-//                postDataParams.put("localTime", myData.timeStamp);
-//                postDataParams.put("ax", myData.ax);
-//                postDataParams.put("ay", myData.ay);
-//                postDataParams.put("az", myData.az);
-//                postDataParams.put("g", myData.g);
-//                postDataParams.put("latitude", myData.lat);
-//                postDataParams.put("longitude", myData.lng);
-//                postDataParams.put("altitude", myData.alt);
-//                postDataParams.put("accuracy", myData.acu);
-//                postDataParams.put("speed", myData.speed);
-//                postDataParams.put("provider", myData.provider);
-//                postDataParams.put("wifi mac", myData.wifiInfo.get("BSSID"));
-//                postDataParams.put("wifi ssid", myData.wifiInfo.get("SSID"));
-//                postDataParams.put("wifi signal level", myData.wifiInfo.get("RSSI"));
-//                postDataParams.put("safe", myData.isSafe);
-//
-////                postDataParams.put("id", id);
-//
-//                Log.i("params", postDataParams.toString());
-//
-//                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                conn.setReadTimeout(15000 /* milliseconds */);
-//                conn.setConnectTimeout(15000 /* milliseconds */);
-//                conn.setRequestMethod("POST");
-//                conn.setDoInput(true);
-//                conn.setDoOutput(true);
-//
-//                OutputStream os = conn.getOutputStream();
-//                BufferedWriter writer = new BufferedWriter(
-//                        new OutputStreamWriter(os, "UTF-8"));
-//                writer.write(getPostDataString(postDataParams));
-//
-//                writer.flush();
-//                writer.close();
-//                os.close();
-//
-//                int responseCode = conn.getResponseCode();
-//
-//                if (responseCode == HttpsURLConnection.HTTP_OK) {
-//
-//                    BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//                    StringBuilder sb = new StringBuilder("");
-//                    String line = "";
-//
-//                    while ((line = in.readLine()) != null) {
-//                        sb.append(line);
-//                        break;
-//                    }
-//
-//                    in.close();
-//                    return sb.toString();
-//
-//                } else {
-//                    return new String("false : " + responseCode);
-//                }
-//            } catch (Exception e) {
-//                return new String("Exception: " + e.getMessage());
-//            }
-//        }
-//
-//        @Override
-//        protected void onPostExecute(String result) {
-//            Log.i("PostResult", result);
-//            Toast.makeText(getApplicationContext(), result,
-//                    Toast.LENGTH_LONG).show();
-//
-//        }
-//    }
-
-//    public String getPostDataString(JSONObject params) throws Exception {
-//
-//        StringBuilder result = new StringBuilder();
-//        boolean first = true;
-//
-//        Iterator<String> itr = params.keys();
-//
-//        while (itr.hasNext()) {
-//
-//            String key = itr.next();
-//            Object value = params.get(key);
-//
-//            if (first)
-//                first = false;
-//            else
-//                result.append("&");
-//
-//            result.append(URLEncoder.encode(key, "UTF-8"));
-//            result.append("=");
-//            result.append(URLEncoder.encode(value.toString(), "UTF-8"));
-//
-//        }
-//        return result.toString();
-//    }
 
 
 }

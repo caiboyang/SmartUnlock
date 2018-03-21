@@ -119,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     }
 //                    mTextMessage.setText(R.string.title_predict);
                     return true;
-                case R.id.navigation_train:
+                case R.id.navigation_collect:
                     runMode = RunMode.TEST;
                     safeBtn.setVisibility(View.VISIBLE);
                     dangerBtn.setVisibility(View.VISIBLE);

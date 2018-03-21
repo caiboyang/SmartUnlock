@@ -186,12 +186,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
         }
-        else{
-            new AlertDialog.Builder(this)
-                    .setMessage(R.string.permission_warning)
-                    .setPositiveButton(R.string.dismiss, null)
-                    .show();
-        }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 

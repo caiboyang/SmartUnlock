@@ -22,6 +22,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -38,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private TextView resultText;
     private TextView displayText;
     private Button refreshBtn;
+    private ImageView imageView;
 
     private boolean mPermissionReady;
 
@@ -109,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         displayText = findViewById(R.id.text_display);
         refreshBtn = findViewById(R.id.refresh_button);
         resultText = findViewById(R.id.test_result);
+        imageView =  findViewById(R.id.imageView);
 //
 //        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
 //        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -132,6 +135,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Run the above code block on the main thread after 2 seconds
 //        handler.post(runnableCode);
 
+        imageView.setImageResource(0);
         refreshBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -277,10 +281,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
             if(myData.result == 1) {
                 resultText.setTextColor(Color.GREEN);
+                imageView.setImageResource(R.drawable.shield_yes_128);
                 res.append("Safe");
             }
             else{
                 resultText.setTextColor(Color.RED);
+                imageView.setImageResource(R.drawable.shield_no_128);
                 res.append("Danger");
             }
             resultText.setText(res);

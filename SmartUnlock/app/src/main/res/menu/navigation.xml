@@ -7,8 +7,8 @@
         android:title="@string/title_predict" />
 
     <item
-        android:id="@+id/navigation_train"
+        android:id="@+id/navigation_collect"
         android:icon="@drawable/ic_dashboard_black_24dp"
-        android:title="@string/title_train" />
+        android:title="@string/title_collect" />
 
 </menu>

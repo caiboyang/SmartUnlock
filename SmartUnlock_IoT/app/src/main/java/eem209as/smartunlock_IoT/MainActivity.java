@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private LocationManager lm = null;
     private LocationListener myLocationListener = null;
 
+    private String checkingString = "Checking your surrounding environment, please wait...";
+
     private DataClass myData = new DataClass();
     protected String clientId;
 
@@ -112,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         refreshBtn = findViewById(R.id.refresh_button);
         resultText = findViewById(R.id.test_result);
         imageView =  findViewById(R.id.imageView);
+
+        imageView.setImageResource(0);
 //
 //        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
 //        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -135,7 +139,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         // Run the above code block on the main thread after 2 seconds
 //        handler.post(runnableCode);
 
-        imageView.setImageResource(0);
         refreshBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -192,7 +195,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 ////        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
 //        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
 //        displayText.setText(dis);
-        awsConnection.sendData(myData);
+        displayText.setText(checkingString);
+//        awsConnection.sendData(myData);
 //        new SendRequest().execute();
 
     }
@@ -207,10 +211,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     protected void onStart() {
-        if(connection) {
-            updateTime();
-            awsConnection.sendData(myData);
-        }
+
+//        if(connection) {
+//            displayText.setText(checkingString);
+//            updateTime();
+//            awsConnection.sendData(myData);
+//        }
         super.onStart();
     }
 
@@ -218,12 +224,15 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onPause() {
 //        sm.unregisterListener(this);
 //        lm.removeUpdates(this);
+        imageView.setImageResource(0);
+        resultText.setText("");
         super.onPause();
     }
 
     @Override
     protected void onResume() {
         if(connection) {
+            displayText.setText(checkingString);
             updateTime();
             awsConnection.sendData(myData);
         }

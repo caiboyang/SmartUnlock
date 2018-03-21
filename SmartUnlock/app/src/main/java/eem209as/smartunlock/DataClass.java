@@ -1,5 +1,6 @@
 package eem209as.smartunlock;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -21,4 +22,5 @@ class DataClass {
     String timeStamp = "";
     String dayStamp = "";
     Map<String, String> wifiInfo = null;
+    int result = 0;
 }

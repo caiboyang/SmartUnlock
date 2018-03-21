@@ -81,6 +81,7 @@ public class AWSConnection {
                 predictRequest = new PredictRequest();
                 predictRequest.setMLModelId(mlModelId);
                 Log.i("AWSConnection", "Predict is Ready!");
+                activity.isAWSReady = true;
             }
         }).start();
 
@@ -130,6 +131,8 @@ public class AWSConnection {
                 PredictResult predictResult = client.predict(predictRequest);
                 String predictResultLabel = predictResult.getPrediction().getPredictedLabel();
                 Log.i("PredictionResult", predictResultLabel);
+                myData.result = Integer.parseInt(predictResultLabel);
+                activity.awsCallBack();
 //                Toast.makeText(activity.getApplicationContext(), predictResultLabel, Toast.LENGTH_LONG).show();
             }
         }).start();

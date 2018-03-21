@@ -16,6 +16,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
@@ -26,10 +30,5 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
-
-    compile 'com.amazonaws:aws-android-sdk-core:2.6.17'
-    compile 'com.amazonaws:aws-android-sdk-s3:2.6.17'
-    compile 'com.amazonaws:aws-android-sdk-ddb:2.6.17'
-    compile 'com.amazonaws:aws-android-sdk-machinelearning:2.6.17'
-
+    compile 'com.amazonaws:aws-android-sdk-iot:2.6.+'
 }

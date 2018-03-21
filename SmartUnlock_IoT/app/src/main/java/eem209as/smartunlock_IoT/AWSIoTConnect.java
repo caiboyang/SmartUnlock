@@ -85,6 +85,7 @@ public class AWSIoTConnect {
                 @Override
                 public void onStatusChanged(final AWSIotMqttClientStatus status,
                                             final Throwable throwable) {
+                    mainActivity.connection = true;
                     Log.d(LOG_TAG, "Status = " + String.valueOf(status));
                 }
             });

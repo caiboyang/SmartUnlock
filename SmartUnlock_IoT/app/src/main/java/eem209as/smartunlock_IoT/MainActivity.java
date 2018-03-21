@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -34,7 +35,7 @@ import java.util.UUID;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationDelegate {
 
-    private TextView mTextMessage;
+    private TextView resultText;
     private TextView displayText;
     private Button refreshBtn;
 
@@ -46,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     private DataClass myData = new DataClass();
     protected String clientId;
+
+    protected boolean connection = false;
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
 
@@ -84,8 +87,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //    };
 
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        mTextMessage = (TextView) findViewById(R.id.message);
         displayText = findViewById(R.id.text_display);
         refreshBtn = findViewById(R.id.refresh_button);
+        resultText = findViewById(R.id.test_result);
 //
 //        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
 //        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
@@ -118,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
         lm = (LocationManager) this.getSystemService(Context.LOCATION_SERVICE);
 
-        if(mPermissionReady){
+        if (mPermissionReady) {
             lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
             lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
         }
@@ -139,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         });
     }
 
-    private void requestPermission(){
+    private void requestPermission() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION}, 11);
     }
@@ -164,37 +166,49 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void setTextView() {
-        myData.wifiInfo = WifiUtils.getDetailsWifiInfo(this);
-//        timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
-        Date now = Calendar.getInstance().getTime();
-        myData.dayStamp = new SimpleDateFormat("EEEE").format(now);
-        myData.timeStamp = new SimpleDateFormat("HH:mm:ss").format(now);
-        StringBuilder dis = new StringBuilder("You just Refreshed!!!\n");
-        dis.append("day is: ").append(myData.dayStamp).append("\n");
-        dis.append("time is: ").append(myData.timeStamp).append("\n");
-        dis.append("the current situation is: ").append(myData.isSafe ? "Safe" : "Dangerous").append("\n");
-        dis.append("ax is: ").append(myData.ax).append("\n");
-        dis.append("ay is: ").append(myData.ay).append("\n");
-        dis.append("az is: ").append(myData.az).append("\n");
-        dis.append("g is: ").append(myData.g).append("\n");
-        dis.append("latitude is: ").append(myData.lat).append("\n");
-        dis.append("longitude is: ").append(myData.lng).append("\n");
-        dis.append("altitude is: ").append(myData.alt).append("\n");
-        dis.append("accuracy is: ").append(myData.acu).append("\n");
-        dis.append("speed is: ").append(myData.speed).append("\n");
-        dis.append("provider is: ").append(myData.provider).append("\n");
-        dis.append("Wifi info: \n");
-        dis.append("BSSID: ").append(myData.wifiInfo.get("BSSID")).append("\n");
-        dis.append("SSID: ").append(myData.wifiInfo.get("SSID")).append("\n");
-        dis.append("RSSI: ").append(myData.wifiInfo.get("RSSI")).append("\n");
-//        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
-        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
-        displayText.setText(dis);
+        updateTime();
+//        StringBuilder dis = new StringBuilder("You just Refreshed!!!\n");
+//        dis.append("day is: ").append(myData.dayStamp).append("\n");
+//        dis.append("time is: ").append(myData.timeStamp).append("\n");
+//        dis.append("the current situation is: ").append(myData.isSafe ? "Safe" : "Dangerous").append("\n");
+//        dis.append("ax is: ").append(myData.ax).append("\n");
+//        dis.append("ay is: ").append(myData.ay).append("\n");
+//        dis.append("az is: ").append(myData.az).append("\n");
+//        dis.append("g is: ").append(myData.g).append("\n");
+//        dis.append("latitude is: ").append(myData.lat).append("\n");
+//        dis.append("longitude is: ").append(myData.lng).append("\n");
+//        dis.append("altitude is: ").append(myData.alt).append("\n");
+//        dis.append("accuracy is: ").append(myData.acu).append("\n");
+//        dis.append("speed is: ").append(myData.speed).append("\n");
+//        dis.append("provider is: ").append(myData.provider).append("\n");
+//        dis.append("Wifi info: \n");
+//        dis.append("BSSID: ").append(myData.wifiInfo.get("BSSID")).append("\n");
+//        dis.append("SSID: ").append(myData.wifiInfo.get("SSID")).append("\n");
+//        dis.append("RSSI: ").append(myData.wifiInfo.get("RSSI")).append("\n");
+////        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
+//        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
+//        displayText.setText(dis);
         awsConnection.sendData(myData);
 //        new SendRequest().execute();
 
     }
 
+    private void updateTime() {
+        myData.wifiInfo = WifiUtils.getDetailsWifiInfo(this);
+//        timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
+        Date now = Calendar.getInstance().getTime();
+        myData.dayStamp = new SimpleDateFormat("EEEE").format(now);
+        myData.timeStamp = new SimpleDateFormat("HH:mm:ss").format(now);
+    }
+
+    @Override
+    protected void onStart() {
+        if(connection) {
+            updateTime();
+            awsConnection.sendData(myData);
+        }
+        super.onStart();
+    }
 
     @Override
     protected void onPause() {
@@ -205,9 +219,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     @Override
     protected void onResume() {
-//        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
-//        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
-//        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
+        if(connection) {
+            updateTime();
+            awsConnection.sendData(myData);
+        }
         super.onResume();
     }
 
@@ -239,30 +254,38 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     public void returnLocation(Location location) {
 //         获取纬度
         myData.lat = location.getLatitude();
-            // 获取经度
+        // 获取经度
         myData.lng = location.getLongitude();
-            // 位置提供者
+        // 位置提供者
         myData.provider = location.getProvider();
-            // 位置的准确性
+        // 位置的准确性
         myData.acu = location.getAccuracy();
-            // 高度信息
+        // 高度信息
         myData.alt = location.getAltitude();
-            // 方向角
-//            float bearing = location.getBearing();
-            // 速度 米/秒
+        // 速度 米/秒
         myData.speed = location.getSpeed();
 //            setTextView();
     }
 
-    protected void dataReceived(){
+    protected void dataReceived() {
         Log.d(LOG_TAG, "dataReceived!!!");
         runOnUiThread(() -> {
-            StringBuilder dis = new StringBuilder("Data received!!!\n");
-            dis.append("result is: ").append(myData.result).append("\n");
+            StringBuilder dis = new StringBuilder("Your current status is: ");
+            StringBuilder res = new StringBuilder();
+
             displayText.setText(dis);
+
+            if(myData.result == 1) {
+                resultText.setTextColor(Color.GREEN);
+                res.append("Safe");
+            }
+            else{
+                resultText.setTextColor(Color.RED);
+                res.append("Danger");
+            }
+            resultText.setText(res);
         });
     }
-
 
 
 }

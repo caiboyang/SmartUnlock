@@ -2,9 +2,9 @@ package eem209as.smartunlock;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -16,12 +16,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -47,12 +51,22 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity implements SensorEventListener, LocationDelegate {
 
-    private TextView mTextMessage;
+//    private TextView mTextMessage;
     private TextView displayText;
+    private TextView resultText;
     private Button refreshBtn;
     private Button safeBtn;
     private Button dangerBtn;
+    private ImageView imageView;
+    private BottomNavigationView bottomNavigationView;
     private boolean mPermissionReady;
+    protected boolean isAWSReady;
+    protected enum RunMode {
+        PREDICTION,
+        TEST
+    }
+    RunMode runMode = RunMode.PREDICTION;
+    private String checkingString = "Checking your surrounding environment, please wait...";
 
     private SensorManager sm;
     private LocationManager lm = null;
@@ -72,30 +86,56 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         public void run() {
             // Do something here on the main thread
             Log.d("Handlers", "Called on main thread");
-            setTextView();
+            setTextViewForTest();
             Toast.makeText(getApplicationContext(), "UI refreshed!!!", Toast.LENGTH_LONG).show();
             handler.postDelayed(this, 30000);
         }
     };
-//    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
-//            = new BottomNavigationView.OnNavigationItemSelectedListener() {
-//
-//        @Override
-//        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-//            switch (item.getItemId()) {
-//                case R.id.navigation_home:
-//                    mTextMessage.setText(R.string.title_home);
-//                    return true;
-//                case R.id.navigation_dashboard:
-//                    mTextMessage.setText(R.string.title_dashboard);
-//                    return true;
-//                case R.id.navigation_notifications:
-//                    mTextMessage.setText(R.string.title_notifications);
-//                    return true;
-//            }
-//            return false;
-//        }
-//    };
+
+    private BottomNavigationView.OnNavigationItemSelectedListener mOnNavigationItemSelectedListener
+            = new BottomNavigationView.OnNavigationItemSelectedListener() {
+
+        @Override
+        public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+            switch (item.getItemId()) {
+                case R.id.navigation_predict:
+                    runMode = RunMode.PREDICTION;
+                    safeBtn.setVisibility(View.INVISIBLE);
+                    dangerBtn.setVisibility(View.INVISIBLE);
+                    resultText.setVisibility(View.VISIBLE);
+                    imageView.setVisibility(View.VISIBLE);
+                    refreshBtn.setVisibility(View.VISIBLE);
+
+                    imageView.setImageResource(0);
+                    displayText.setGravity(Gravity.CENTER);
+                    displayText.setTextSize(32);
+                    resultText.setTextSize(60);
+
+                    displayText.setText(checkingString);
+                    handler.removeCallbacks(runnableCode);
+                    if(isAWSReady){
+                        updateInfo();
+                        awsConnection.callPredict(myData);
+                    }
+//                    mTextMessage.setText(R.string.title_predict);
+                    return true;
+                case R.id.navigation_train:
+                    runMode = RunMode.TEST;
+                    safeBtn.setVisibility(View.VISIBLE);
+                    dangerBtn.setVisibility(View.VISIBLE);
+                    resultText.setVisibility(View.INVISIBLE);
+                    imageView.setVisibility(View.INVISIBLE);
+                    refreshBtn.setVisibility(View.INVISIBLE);
+
+                    displayText.setGravity(Gravity.NO_GRAVITY);
+                    displayText.setTextSize(14);
+                    handler.post(runnableCode);
+//                    mTextMessage.setText(R.string.title_train);
+                    return true;
+            }
+            return false;
+        }
+    };
 
 
 
@@ -116,18 +156,22 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if (!mPermissionReady) {
             requestPermission();
         }
-
         awsConnection = new AWSConnection(this);
         awsConnection.initialize();
 
 //        mTextMessage = (TextView) findViewById(R.id.message);
         displayText = findViewById(R.id.text_display);
+        resultText = findViewById(R.id.text_result);
         refreshBtn = findViewById(R.id.refresh_button);
         safeBtn = findViewById(R.id.safe_button);
         dangerBtn = findViewById(R.id.danger_button);
-//        BottomNavigationView navigation = (BottomNavigationView) findViewById(R.id.navigation);
-//        navigation.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        imageView = findViewById(R.id.image_result);
+        bottomNavigationView = findViewById(R.id.navigation);
+        bottomNavigationView.setOnNavigationItemSelectedListener(mOnNavigationItemSelectedListener);
+        imageView.setImageResource(0);
 
+        displayText.setGravity(Gravity.NO_GRAVITY);
+        resultText.setGravity(Gravity.CENTER);
         myLocationListener = new MyLocationListener(this);
 
         sm = (SensorManager) getSystemService(SENSOR_SERVICE);
@@ -141,13 +185,20 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
 
 
-        // Run the above code block on the main thread after 2 seconds
-        handler.post(runnableCode);
+//        handler.post(runnableCode);
         refreshBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                awsConnection.callPredict(myData);
-//                btnSetTextView();
+                if(runMode == RunMode.PREDICTION && isAWSReady){
+                    displayText.setText(checkingString);
+                    imageView.setImageResource(0);
+                    resultText.setText("");
+                    updateInfo();
+                    awsConnection.callPredict(myData);
+                }
+//                else
+//                    setTextViewForTest();
+//                setTextViewForTest();
             }
         });
         safeBtn.setOnClickListener(new View.OnClickListener() {
@@ -164,6 +215,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Toast.makeText(getApplicationContext(), "Dangerous mode activated", Toast.LENGTH_LONG).show();
             }
         });
+
+
+        //default mode is set to predict mode
+        runMode = RunMode.PREDICTION;
+        safeBtn.setVisibility(View.INVISIBLE);
+        dangerBtn.setVisibility(View.INVISIBLE);
+        resultText.setVisibility(View.VISIBLE);
+        handler.removeCallbacks(runnableCode);
+        displayText.setGravity(Gravity.CENTER);
+        displayText.setTextSize(32);
+        resultText.setTextSize(60);
+        bottomNavigationView.getMenu().getItem(0).setChecked(true);
     }
 
     private void requestPermission(){
@@ -189,12 +252,35 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    public void setTextView() {
+    protected void awsCallBack(){
+        runOnUiThread(()->{
+            StringBuilder dis = new StringBuilder("Your current status is: ");
+            StringBuilder res = new StringBuilder();
+
+            displayText.setText(dis);
+
+            if(myData.result == 1) {
+                resultText.setTextColor(Color.GREEN);
+                imageView.setImageResource(R.drawable.shield_yes_128);
+                res.append("Safe");
+            }
+            else{
+                resultText.setTextColor(Color.RED);
+                imageView.setImageResource(R.drawable.shield_no_128);
+                res.append("Danger");
+            }
+            resultText.setText(res);
+        });
+    }
+    private void updateInfo(){
         myData.wifiInfo = WifiUtils.getDetailsWifiInfo(this);
 //        timeStamp = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss").format(Calendar.getInstance().getTime());
         Date now = Calendar.getInstance().getTime();
         myData.dayStamp = new SimpleDateFormat("EEEE").format(now);
         myData.timeStamp = new SimpleDateFormat("HH:mm:ss").format(now);
+    }
+    public void setTextViewForTest() {
+        updateInfo();
         StringBuilder dis = new StringBuilder("You just Refreshed!!!\n");
         dis.append("day is: ").append(myData.dayStamp).append("\n");
         dis.append("time is: ").append(myData.timeStamp).append("\n");
@@ -214,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dis.append("SSID: ").append(myData.wifiInfo.get("SSID")).append("\n");
         dis.append("RSSI: ").append(myData.wifiInfo.get("RSSI")).append("\n");
 //        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
-        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
+//        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
         displayText.setText(dis);
         new SendRequest().execute();
 
@@ -233,6 +319,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
 //        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
 //        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
+        if(runMode == RunMode.PREDICTION && isAWSReady) {
+            displayText.setText(checkingString);
+            updateInfo();
+            awsConnection.callPredict(myData);
+        }
         super.onResume();
     }
 
@@ -276,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //            float bearing = location.getBearing();
             // 速度 米/秒
         myData.speed = location.getSpeed();
-//            setTextView();
+//            setTextViewForTest();
     }
 
 
@@ -418,6 +509,5 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         }
         return result.toString();
     }
-
 
 }

@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataClass myData = new DataClass();
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
+    private static final int delayMillisecond = 5000;//delay is 5 sec for each submission
 
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();
@@ -90,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             Log.d("Handlers", "Called on main thread");
             setTextViewForTest();
             Toast.makeText(getApplicationContext(), "UI refreshed!!!", Toast.LENGTH_LONG).show();
-            handler.postDelayed(this, 30000);
+            handler.postDelayed(this, delayMillisecond);
         }
     };
 
@@ -303,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dis.append("RSSI: ").append(myData.wifiInfo.get("RSSI")).append("\n");
 //        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
 //        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
-        List<BluetoothDevice> deviceList = BLEUtils.getDevice();
+        List<BluetoothDevice> deviceList = BLEUtils.getDeviceList();
         if(deviceList != null && deviceList.size() != 0) {
             dis.append("Bluetooth Name: ").append(deviceList.get(0).getName()).append("\n");
             dis.append("Bluetooth MAC: ").append(deviceList.get(0).getAddress()).append("\n");

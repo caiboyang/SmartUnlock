@@ -27,7 +27,7 @@ public class AWSConnection {
     // Region of AWS IoT
     private static final Regions MY_REGION = Regions.US_EAST_1;
     // Use a created model that has a created real-time endpoint
-    public static final String mlModelId = "ml-azQvUDQ68KH";
+    public static final String mlModelId = "ml-7dMqsQrjejW";
 
 
     private MainActivity activity;

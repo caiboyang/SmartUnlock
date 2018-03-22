@@ -103,36 +103,12 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             switch (item.getItemId()) {
                 case R.id.navigation_predict:
                     runMode = RunMode.PREDICTION;
-                    safeBtn.setVisibility(View.INVISIBLE);
-                    dangerBtn.setVisibility(View.INVISIBLE);
-                    resultText.setVisibility(View.VISIBLE);
-                    imageView.setVisibility(View.VISIBLE);
-                    refreshBtn.setVisibility(View.VISIBLE);
-
-                    resultText.setText("");
-                    imageView.setImageResource(0);
-                    displayText.setGravity(Gravity.CENTER);
-                    displayText.setTextSize(32);
-                    resultText.setTextSize(60);
-
-                    displayText.setText(checkingString);
-                    handler.removeCallbacks(runnableCode);
-                    if(isAWSReady){
-                        updateInfo();
-                        awsConnection.callPredict(myData);
-                    }
+                    predictCombo();
 //                    mTextMessage.setText(R.string.title_predict);
                     return true;
                 case R.id.navigation_collect:
                     runMode = RunMode.TEST;
-                    safeBtn.setVisibility(View.VISIBLE);
-                    dangerBtn.setVisibility(View.VISIBLE);
-                    resultText.setVisibility(View.INVISIBLE);
-                    imageView.setVisibility(View.INVISIBLE);
-                    refreshBtn.setVisibility(View.INVISIBLE);
-
-                    displayText.setGravity(Gravity.NO_GRAVITY);
-                    displayText.setTextSize(12);
+                    collectCombo();
                     handler.post(runnableCode);
 //                    mTextMessage.setText(R.string.title_train);
                     return true;
@@ -238,6 +214,39 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 Manifest.permission.ACCESS_FINE_LOCATION}, 11);
     }
 
+    private void predictCombo(){
+
+        safeBtn.setVisibility(View.INVISIBLE);
+        dangerBtn.setVisibility(View.INVISIBLE);
+        resultText.setVisibility(View.VISIBLE);
+        imageView.setVisibility(View.VISIBLE);
+        refreshBtn.setVisibility(View.VISIBLE);
+
+        resultText.setText("");
+        imageView.setImageResource(0);
+        displayText.setGravity(Gravity.CENTER);
+        displayText.setTextSize(32);
+        resultText.setTextSize(60);
+
+        displayText.setText(checkingString);
+        handler.removeCallbacks(runnableCode);
+        if(isAWSReady){
+            updateInfo();
+            awsConnection.callPredict(myData);
+        }
+    }
+
+    private void collectCombo(){
+        safeBtn.setVisibility(View.VISIBLE);
+        dangerBtn.setVisibility(View.VISIBLE);
+        resultText.setVisibility(View.INVISIBLE);
+        imageView.setVisibility(View.INVISIBLE);
+        refreshBtn.setVisibility(View.INVISIBLE);
+
+        displayText.setGravity(Gravity.NO_GRAVITY);
+        displayText.setTextSize(12);
+    }
+
     @SuppressLint("MissingPermission")
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         Map<String, Integer> perm = new HashMap<>();
@@ -328,10 +337,14 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //        sm.registerListener(this, sm.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
 //        lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, myLocationListener);
 //        lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, myLocationListener);
-        if(runMode == RunMode.PREDICTION && isAWSReady) {
-            displayText.setText(checkingString);
-            updateInfo();
-            awsConnection.callPredict(myData);
+        if(runMode == RunMode.PREDICTION) {
+            resultText.setText("");
+            imageView.setImageResource(0);
+            if(isAWSReady) {
+                displayText.setText(checkingString);
+                updateInfo();
+                awsConnection.callPredict(myData);
+            }
         }
         super.onResume();
     }

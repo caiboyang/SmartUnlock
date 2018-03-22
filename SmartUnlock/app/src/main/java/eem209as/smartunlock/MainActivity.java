@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataClass myData = new DataClass();
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
-    private static final int delayMillisecond = 5000;//delay is 5 sec for each submission
+    private static final int delayMillisecond = 30000;//delay is 5 sec for each submission
 
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();
@@ -339,6 +339,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     protected void onDestroy() {
         sm.unregisterListener(this);
         lm.removeUpdates(myLocationListener);
+        handler.removeCallbacks(runnableCode);
         super.onDestroy();
     }
 

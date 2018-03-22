@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     imageView.setVisibility(View.VISIBLE);
                     refreshBtn.setVisibility(View.VISIBLE);
 
+                    resultText.setText("");
                     imageView.setImageResource(0);
                     displayText.setGravity(Gravity.CENTER);
                     displayText.setTextSize(32);

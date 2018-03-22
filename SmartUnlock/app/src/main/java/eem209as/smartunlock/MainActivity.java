@@ -2,6 +2,7 @@ package eem209as.smartunlock;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private SensorManager sm;
     private LocationManager lm = null;
     private LocationListener myLocationListener = null;
+    private BluetoothAdapter bluetoothAdapter;
 
     private AWSConnection awsConnection;
 

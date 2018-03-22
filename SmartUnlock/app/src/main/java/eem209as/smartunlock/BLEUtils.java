@@ -3,11 +3,10 @@ package eem209as.smartunlock;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothManager;
-import android.bluetooth.BluetoothProfile;
-import android.content.Context;
 import android.util.Log;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -17,31 +16,37 @@ import java.util.Set;
 
 public class BLEUtils {
 
-    public static String getDeviceList(Context context){
-        StringBuilder res = new StringBuilder();
-        BluetoothAdapter mBlurAdapter= BluetoothAdapter.getDefaultAdapter();
-        BluetoothManager mBlurManager = (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
-        List<BluetoothDevice> connectedDevices = mBlurManager.getConnectedDevices(BluetoothProfile.GATT);
-        Set<BluetoothDevice> pairedDevices = mBlurAdapter.getBondedDevices();
-        if (pairedDevices.isEmpty()) {
-            Log.e("DeviceActivity ", "Paired Device not founds");
-            return "";
-        }
-        else if(connectedDevices.isEmpty()){
-            Log.e("DeviceActivity ", "Connected Device not founds");
-            return "";
-        }
+    public static List<BluetoothDevice> getDeviceList() {
+        List<BluetoothDevice> deviceList = new ArrayList<>();
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        Class<BluetoothAdapter> bluetoothAdapterClass = BluetoothAdapter.class;//得到BluetoothAdapter的Class对象
+        try {
+            Method method = bluetoothAdapterClass.getDeclaredMethod("getConnectionState", (Class[]) null);
+            method.setAccessible(true);
+            int state = (int) method.invoke(adapter, (Object[]) null);
 
-        for (BluetoothDevice devices : connectedDevices) {
-            res.append("Device: address: ").append(devices.getAddress());
-//            Log.d("DeviceActivity", "Device : address : " + devices.getAddress() + " name :"
-//                    + devices.getName());
-        }
+            if (state == BluetoothAdapter.STATE_CONNECTED) {
+                Log.i("BLUETOOTH", "BluetoothAdapter.STATE_CONNECTED");
+                Set<BluetoothDevice> devices = adapter.getBondedDevices();
+                Log.i("BLUETOOTH", "devices:" + devices.size());
 
-//        for (BluetoothDevice devices : pairedDevices) {
-//            Log.d("DeviceActivity", "Device : address : " + devices.getAddress() + " name :"
-//                    + devices.getName());
-//        }
-        return res.toString();
+                for (BluetoothDevice device : devices) {
+                    Method isConnectedMethod = BluetoothDevice.class.getDeclaredMethod("isConnected", (Class[]) null);
+                    method.setAccessible(true);
+                    boolean isConnected = (boolean) isConnectedMethod.invoke(device, (Object[]) null);
+                    if (isConnected) {
+                        Log.i("BLUETOOTH", "connected:" + device.getName() + " address: " + device.getAddress());
+                        deviceList.add(device);
+
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return deviceList;
     }
 }
+
+

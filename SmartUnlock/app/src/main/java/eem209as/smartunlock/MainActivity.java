@@ -2,6 +2,7 @@ package eem209as.smartunlock;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -44,6 +45,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -128,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     refreshBtn.setVisibility(View.INVISIBLE);
 
                     displayText.setGravity(Gravity.NO_GRAVITY);
-                    displayText.setTextSize(14);
+                    displayText.setTextSize(12);
                     handler.post(runnableCode);
 //                    mTextMessage.setText(R.string.title_train);
                     return true;
@@ -301,6 +303,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         dis.append("RSSI: ").append(myData.wifiInfo.get("RSSI")).append("\n");
 //        dis.append("Wifi info: ").append(WifiUtils.getDetailsWifiInfo(this)).append("\n");
 //        dis.append("Bluetooth info: ").append(BLEUtils.getDeviceList(this)).append("\n");
+        List<BluetoothDevice> deviceList = BLEUtils.getDevice();
+        if(deviceList != null && deviceList.size() != 0) {
+            dis.append("Bluetooth Name: ").append(deviceList.get(0).getName()).append("\n");
+            dis.append("Bluetooth MAC: ").append(deviceList.get(0).getAddress()).append("\n");
+        }
         displayText.setText(dis);
         new SendRequest().execute();
 

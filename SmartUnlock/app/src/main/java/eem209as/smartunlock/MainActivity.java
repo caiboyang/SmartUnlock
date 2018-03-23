@@ -79,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     private DataClass myData = new DataClass();
 
     static final String LOG_TAG = MainActivity.class.getCanonicalName();
-    private static final int delayMillisecond = 30000;//delay is 5 sec for each submission
+    private static final int delayMillisecond = 30000;//delay is 30 sec for each submission
 
     // Create the Handler object (on the main thread by default)
     Handler handler = new Handler();
@@ -453,6 +453,11 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 postDataParams.put("wifi mac", myData.wifiInfo.get("BSSID"));
                 postDataParams.put("wifi ssid", myData.wifiInfo.get("SSID"));
                 postDataParams.put("wifi signal level", myData.wifiInfo.get("RSSI"));
+                List<BluetoothDevice> deviceList = BLEUtils.getDeviceList();
+                if(deviceList != null && deviceList.size() != 0) {
+                    postDataParams.put("bluetooth name", deviceList.get(0).getName());
+                    postDataParams.put("bluetooth MAC", deviceList.get(0).getAddress());
+                }
                 postDataParams.put("safe", myData.isSafe);
 
 //                postDataParams.put("id", id);
